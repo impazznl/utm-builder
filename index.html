@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTM Builder | Impazz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #d2232b;
+      --brand-light: #fbeaeb;
+      --brand-dark: #a81b22;
+      --navy: #00325b;
+      --bg: #f3f5f7;
+      --white: #ffffff;
+      --border: #e2e5ea;
+      --text: #00325b;
+      --muted: #6b7280;
+      --muted2: #9ca3af;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --sans: 'Roboto', -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+
+    /* Topbar */
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 32px; height: 32px; background: var(--navy); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon svg { width: 17px; height: 17px; }
+    .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-name span { color: var(--brand); }
+    .topbar-meta { font-size: 12px; color: var(--muted2); }
+
+    .app { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .intro { margin-bottom: 24px; }
+    .intro h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .intro p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* Accordion */
+    .accordion {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 28px; overflow: hidden;
+    }
+    .accordion-trigger {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 20px; background: none; border: none;
+      font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text);
+      cursor: pointer; text-align: left; gap: 12px;
+    }
+    .accordion-trigger:hover { background: var(--bg); }
+    .accordion-trigger-left { display: flex; align-items: center; gap: 10px; }
+    .accordion-icon {
+      width: 28px; height: 28px; background: var(--brand-light); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .accordion-icon svg { width: 14px; height: 14px; }
+    .accordion-chevron { flex-shrink: 0; color: var(--muted2); transition: transform .25s; }
+    .accordion.open .accordion-chevron { transform: rotate(180deg); }
+    .accordion-body { display: none; border-top: 1px solid var(--border); padding: 24px 20px; }
+    .accordion.open .accordion-body { display: block; }
+    .acc-intro { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
+    .acc-blocks { display: flex; flex-direction: column; gap: 12px; }
+    .acc-block { background: var(--bg); border-radius: 8px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+    .acc-block-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+    .acc-block-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .acc-block-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .acc-block-text code {
+      font-family: 'Courier New', monospace; font-size: 11px; color: var(--brand-dark);
+      background: var(--brand-light); padding: 1px 5px; border-radius: 3px;
+    }
+    .acc-example {
+      margin-top: 20px; background: var(--bg); border-left: 3px solid var(--brand);
+      border-radius: 0 8px 8px 0; padding: 14px 16px;
+    }
+    .acc-example-label {
+      font-size: 11px; font-weight: 700; color: var(--brand);
+      letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .acc-example-url { font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.7; word-break: break-all; color: var(--muted); }
+    .acc-example-url .eu-base { color: var(--text); }
+    .acc-example-url .eu-key { color: var(--brand-dark); font-weight: 700; }
+    .acc-example-url .eu-val { color: var(--brand); }
+    .acc-example-url .eu-sep { color: var(--muted2); }
+    .acc-tip {
+      margin-top: 16px; font-size: 12px; color: var(--muted); line-height: 1.6;
+      padding: 12px 14px; background: #fffbeb; border-radius: 7px; border: 1px solid #fde68a;
+    }
+    .acc-tip strong { color: #92400e; }
+
+    /* Step */
+    .step { display: flex; gap: 20px; margin-bottom: 12px; position: relative; }
+    .step:not(:last-of-type) .step-left::after {
+      content: ''; position: absolute; left: 15px; top: 48px; bottom: -12px;
+      width: 2px; border-radius: 2px; z-index: 0;
+      background: var(--border);
+    }
+    /* Afgeronde stappen: volle lijn naar de volgende stap toe */
+    .step.done .step-left::after {
+      background: linear-gradient(to bottom,
+        rgba(210,35,43,.5) 0%,
+        rgba(210,35,43,.5) 100%);
+    }
+    /* Actieve stap: volle lijn, eindigend op een klein bolletje */
+    .step.active:not(:last-of-type) .step-left::after {
+      background: var(--brand);
+      opacity: .3;
+    }
+    .step.active:not(:last-of-type) .step-left::before {
+      content: ''; position: absolute; left: 12px; bottom: -16px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--brand); opacity: .3; z-index: 1;
+    }
+    .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; position: relative; z-index: 1; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--white);
+      border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--muted2);
+      transition: border-color .2s, background .2s, color .2s; flex-shrink: 0;
+    }
+    .step.active .step-num { border-color: var(--brand); background: var(--brand); color: #fff; }
+    .step.done .step-num { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+    .step.done .step-num::after { content: '✓'; }
+    .step-right { flex: 1; min-width: 0; }
+
+    .step-card {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 10px; transition: border-color .2s; margin-bottom: 0;
+    }
+    .step.active .step-card { border-color: var(--brand); }
+    .step.done .step-card { border-color: var(--border); opacity: .85; }
+    .step-card-header { padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .step-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .step-card-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .step-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+    .badge-required { background: #fff0f0; color: #dc2626; }
+    .badge-optional { background: var(--bg); color: var(--muted2); }
+    .badge-done { background: var(--green-bg); color: var(--green); }
+    .step-card-body { padding: 16px 18px 18px; border-top: 1px solid var(--border); }
+    .step.done .step-card-body { display: none; }
+
+    /* Nog niet bereikte stappen volledig verbergen */
+    .step.locked { display: none; }
+
+    /* Stapteller */
+    .step-counter {
+      font-size: 11px; font-weight: 600; color: var(--muted2);
+      letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px;
+    }
+
+    /* Voortgangsbalk */
+    .progress {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .progress-track {
+      flex: 1; height: 4px; background: var(--border);
+      border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 25%; background: var(--brand);
+      border-radius: 4px; transition: width .35s ease;
+    }
+    .progress-label {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      white-space: nowrap; letter-spacing: .03em;
+    }
+
+    /* Fields */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+    label code {
+      font-family: 'Courier New', monospace; font-size: 11px; color: var(--brand-dark);
+      background: var(--brand-light); padding: 1px 5px; border-radius: 3px;
+    }
+    .field-hint { font-size: 11px; color: var(--muted2); margin-top: 5px; line-height: 1.5; }
+    input[type="text"] {
+      width: 100%; background: var(--white); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 12px; color: var(--text);
+      font-family: var(--sans); font-size: 13px; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input[type="text"]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(210,35,43,.12); }
+    input[type="text"]::placeholder { color: var(--muted2); }
+
+    /* Custom dropdown */
+    .cd-wrap { position: relative; }
+    .cd-trigger {
+      width: 100%; background: var(--white); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 36px 9px 12px; color: var(--text);
+      font-family: var(--sans); font-size: 13px; text-align: left; cursor: pointer;
+      outline: none; display: flex; align-items: center; justify-content: space-between;
+      transition: border-color .15s, box-shadow .15s; user-select: none;
+    }
+    .cd-trigger.placeholder { color: var(--muted2); }
+    .cd-trigger:focus, .cd-wrap.open .cd-trigger { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(210,35,43,.12); }
+    .cd-chevron { width: 14px; height: 14px; flex-shrink: 0; color: var(--muted2); transition: transform .2s; }
+    .cd-wrap.open .cd-chevron { transform: rotate(180deg); }
+    .cd-menu {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1); z-index: 200; overflow: hidden;
+    }
+    .cd-wrap.open .cd-menu { display: block; }
+    .cd-option {
+      padding: 9px 12px; font-family: var(--sans); font-size: 13px; color: var(--text);
+      cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .1s;
+    }
+    .cd-option:hover { background: var(--brand-light); color: var(--brand-dark); }
+    .cd-option.selected { background: var(--brand-light); color: var(--brand-dark); font-weight: 600; }
+    .cd-option.custom-opt { color: var(--muted); border-top: 1px solid var(--border); font-style: italic; }
+
+    /* Niet-passende opties */
+    .cd-option.disabled {
+      opacity: .35; cursor: not-allowed; pointer-events: none;
+      text-decoration: line-through; text-decoration-thickness: 1px;
+    }
+    .cd-option.disabled:hover { background: none; color: var(--text); }
+
+    /* Hint dat er gefilterd wordt */
+    .filter-hint {
+      display: none; font-size: 11px; color: var(--navy);
+      background: #e6edf3; border-radius: 6px;
+      padding: 6px 9px; margin-top: 6px; line-height: 1.4;
+    }
+    .filter-hint.show { display: block; }
+    .cd-option.custom-opt:hover { color: var(--brand-dark); }
+    .cd-opt-desc { font-size: 11px; color: var(--muted2); margin-left: auto; font-weight: 400; }
+    .cd-check { width: 14px; height: 14px; flex-shrink: 0; color: var(--brand); opacity: 0; }
+    .cd-option.selected .cd-check { opacity: 1; }
+
+    .custom-wrap { display: none; margin-top: 8px; }
+    .custom-wrap.show { display: block; }
+    .custom-warn {
+      font-size: 11px; color: #b45309; line-height: 1.5; margin-top: 6px;
+      padding: 8px 10px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px;
+    }
+
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .section-label { font-size: 11px; font-weight: 600; color: var(--muted2); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 12px; }
+
+    /* Presets */
+    .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .preset-btn {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 7px;
+      padding: 9px 12px; text-align: left; cursor: pointer;
+      transition: border-color .15s, background .15s; display: flex; align-items: center; gap: 8px;
+    }
+    .preset-btn:hover { border-color: var(--brand); background: var(--brand-light); }
+    .preset-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); flex-shrink: 0; opacity: .45; }
+    .preset-btn:hover .preset-dot { opacity: 1; }
+    .preset-name { font-size: 12px; font-weight: 600; color: var(--text); display: block; }
+    .preset-vals { font-size: 11px; color: var(--muted2); }
+
+    /* Campaign name builder */
+    .cn-examples { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+    .cn-examples-label { font-size: 11px; color: var(--muted2); margin-right: 2px; }
+    .cn-chip {
+      font-family: 'Courier New', monospace; font-size: 11px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
+      padding: 4px 10px; color: var(--muted); cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .cn-chip:hover { border-color: var(--brand); color: var(--brand-dark); background: var(--brand-light); }
+    .cn-normalized {
+      display: none; margin-top: 8px; font-size: 11px; color: var(--muted);
+      background: var(--bg); border-radius: 6px; padding: 8px 10px;
+    }
+    .cn-normalized.show { display: block; }
+    .cn-normalized code {
+      font-family: 'Courier New', monospace; font-size: 11px;
+      color: var(--brand-dark); background: var(--brand-light);
+      padding: 1px 5px; border-radius: 3px;
+    }
+
+    .next-btn {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
+      padding: 10px 20px; background: var(--brand); color: #fff; border: none;
+      border-radius: 7px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .15s, transform .1s;
+    }
+    .next-btn:hover { background: var(--brand-dark); }
+    .next-btn:active { transform: scale(.98); }
+    .next-btn svg { width: 14px; height: 14px; }
+
+    .done-summary { display: none; padding: 10px 18px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .done-summary strong { color: var(--text); font-weight: 600; }
+    .step.done .done-summary { display: block; }
+
+    /* Output */
+    .output-block {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 7px;
+      padding: 13px 110px 13px 13px; font-family: 'Courier New', monospace;
+      font-size: 12px; line-height: 1.75; word-break: break-all; min-height: 64px; position: relative;
+    }
+    .o-base { color: var(--text); }
+    .o-sep { color: var(--muted2); }
+    .o-key { color: var(--brand-dark); font-weight: 700; }
+    .o-val { color: var(--brand); }
+    .o-empty { color: var(--muted2); font-style: italic; font-family: var(--sans); font-size: 13px; }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px; background: var(--brand);
+      border: none; border-radius: 6px; padding: 6px 14px;
+      font-family: var(--sans); font-size: 12px; font-weight: 600; color: #fff;
+      cursor: pointer; transition: background .15s;
+    }
+    .copy-btn:hover { background: var(--brand-dark); }
+    .copy-btn.copied { background: var(--green); }
+    .output-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted2); }
+    .status-ok { color: var(--green); font-weight: 500; }
+    .status-warn { color: #d97706; font-weight: 500; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    table tr { border-bottom: 1px solid var(--border); }
+    table tr:last-child { border-bottom: none; }
+    table td { padding: 8px 0; font-size: 12px; vertical-align: middle; }
+    table td:first-child { font-family: 'Courier New', monospace; color: var(--brand-dark); font-weight: 700; width: 42%; font-size: 11.5px; }
+    table td.empty { color: var(--muted2); font-style: italic; }
+
+    .save-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 16px; border-radius: 7px; font-family: var(--sans);
+      font-weight: 600; font-size: 13px; cursor: pointer; border: none;
+      transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; max-height: 320px; overflow-y: auto; }
+    .history-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--bg); }
+    .history-item:last-child { border-bottom: none; }
+    .hi-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); flex-shrink: 0; opacity: .4; }
+    .hi-info { flex: 1; min-width: 0; }
+    .hi-campaign { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hi-meta { font-size: 11px; color: var(--muted2); margin-top: 1px; }
+    .hi-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .sm-btn {
+      background: transparent; border: 1px solid var(--border); border-radius: 5px;
+      padding: 4px 9px; font-family: var(--sans); font-size: 11px; font-weight: 500;
+      color: var(--muted); cursor: pointer; transition: border-color .15s, color .15s;
+    }
+    .sm-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .no-history { text-align: center; padding: 20px 0; font-size: 12px; color: var(--muted2); }
+
+    .restart-row { text-align: center; margin-top: 28px; }
+    .restart-link {
+      font-size: 13px; color: var(--brand); font-weight: 500; cursor: pointer;
+      text-decoration: none; background: none; border: none; font-family: var(--sans);
+    }
+    .restart-link:hover { text-decoration: underline; }
+
+    #confettiCanvas {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 500; display: none;
+    }
+    #confettiCanvas.active { display: block; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff;
+      font-size: 13px; font-weight: 500; padding: 10px 18px; border-radius: 8px;
+      opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s;
+      pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon" style="display:none">
+      <svg viewBox="0 0 17 17" fill="none">
+        <path d="M2 8.5h13M8.5 2l6.5 6.5-6.5 6.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <img src="https://impazz.nl/wp-content/uploads/2024/09/logo-impazz-180.png" alt="Impazz" style="height:28px;width:auto;display:block;" onerror="this.style.display='none'" />
+    <span class="brand-name">UTM <span>Builder</span></span>
+  </div>
+  <span class="topbar-meta">Impazz</span>
+</div>
+
+<div class="app">
+
+  <div class="intro">
+    <h2>Maak een campagne-URL in 4 stappen</h2>
+    <p>Vul de stappen hieronder in. Aan het einde krijg je een kant-en-klare link die voldoet aan de naamgevingsconventie.</p>
+  </div>
+
+  <!-- ACCORDION -->
+  <div class="accordion" id="utmAccordion">
+    <button class="accordion-trigger" onclick="toggleAccordion()">
+      <div class="accordion-trigger-left">
+        <div class="accordion-icon">
+          <svg viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="#d2232b" stroke-width="1.5"/>
+            <path d="M7 6.5V10M7 4.5v.5" stroke="#d2232b" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        Wat is een UTM en waarom is het belangrijk?
+      </div>
+      <svg class="accordion-chevron" viewBox="0 0 14 14" fill="none" width="16" height="16">
+        <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="accordion-body">
+      <p class="acc-intro">
+        Stel: je plaatst dezelfde link naar een artikel op drie plekken, in een e-mail, op Instagram en via een Google-advertentie. In Google Analytics zie je dat er 200 bezoekers op die pagina zijn geweest. Maar je weet niet <em>waar ze vandaan kwamen</em>. Dat is precies het probleem dat UTM-codes oplossen.
+      </p>
+      <div class="acc-blocks">
+        <div class="acc-block">
+          <div class="acc-block-icon">🔗</div>
+          <div>
+            <div class="acc-block-title">Wat is een UTM?</div>
+            <div class="acc-block-text">
+              UTM staat voor <em>Urchin Tracking Module</em>, een stukje tekst dat je achter een URL plakt. Google Analytics leest die tekst uit en weet daardoor precies via welk kanaal en welke campagne een bezoeker is binnengekomen. Je verandert niets aan de website, je voegt alleen informatie toe aan de link zelf.
+            </div>
+          </div>
+        </div>
+        <div class="acc-block">
+          <div class="acc-block-icon">🏷️</div>
+          <div>
+            <div class="acc-block-title">Wat voeg je toe aan een link?</div>
+            <div class="acc-block-text">
+              <code>utm_source</code> Het platform waar de klik vandaan komt<br>
+              <code>utm_medium</code> Het kanaaltype, bijvoorbeeld cpc of email<br>
+              <code>utm_campaign</code> De campagnenaam volgens de conventie<br>
+              <code>utm_content</code> De advertentie of variant, voor A/B-tests<br>
+              <code>utm_term</code> Het zoekwoord of de doelgroep
+            </div>
+          </div>
+        </div>
+        <div class="acc-block">
+          <div class="acc-block-icon">⚠️</div>
+          <div>
+            <div class="acc-block-title">Waarom de vaste lijsten?</div>
+            <div class="acc-block-text">
+              Kleine verschillen in schrijfwijze maken je rapportages onbruikbaar: <code>email</code> naast <code>Email</code>, <code>traffic</code> naast <code>verkeer</code>. GA4 is hoofdlettergevoelig, dus dat worden aparte rijen in elk rapport. Daarom werkt deze tool met keuzelijsten in plaats van vrije invoer.
+            </div>
+          </div>
+        </div>
+        <div class="acc-block">
+          <div class="acc-block-icon">📊</div>
+          <div>
+            <div class="acc-block-title">Opbouw van de campagnenaam</div>
+            <div class="acc-block-text">
+              Houd het patroon <code>merk-doel-onderwerp-periode</code> aan, bijvoorbeeld <code>impazz-traffic-nieuwsbrief-202610</code>. Doel is <code>traffic</code> voor verkeer of <code>leads</code> voor aanvragen en inschrijvingen. Belangrijkste regel: gebruik in ActiveCampaign, Lemlist of het advertentieplatform exact dezelfde campagnenaam, anders blijf je handmatig mappen.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="acc-example">
+        <div class="acc-example-label">Voorbeeld van een UTM-link</div>
+        <div class="acc-example-url">
+          <span class="eu-base">https://impazz.nl/ultimo-basistraining/</span><span class="eu-sep">?</span><span class="eu-key">utm_source</span><span class="eu-sep">=</span><span class="eu-val">activecampaign</span><span class="eu-sep">&amp;</span><span class="eu-key">utm_medium</span><span class="eu-sep">=</span><span class="eu-val">email</span><span class="eu-sep">&amp;</span><span class="eu-key">utm_campaign</span><span class="eu-sep">=</span><span class="eu-val">impazz-leads-ultimo-trainingen-202610</span>
+        </div>
+      </div>
+      <div class="acc-tip">
+        <strong>💡 Gouden regel:</strong> gebruik UTM-codes op elke link die je deelt buiten de eigen website, dus in advertenties, e-mails, social posts en nieuwsbrieven. Gebruik ze <em>niet</em> voor interne links op de eigen site, want dan vervuil je je eigen data. In ActiveCampaign laat je de eigen Google Analytics-linktracking uit en plak je de links uit deze tool, ook in automations.
+      </div>
+    </div>
+  </div>
+
+  <div class="progress">
+    <span class="progress-label" id="progressLabel">Stap 1 van 4</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- STAP 1 -->
+  <div class="step active" id="step1">
+    <div class="step-left"><div class="step-num">1</div></div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-counter">Stap 1 van 4</div>
+            <div class="step-card-title">Naar welke pagina wil je mensen sturen?</div>
+            <div class="step-card-sub">Voer de volledige URL in van de landingspagina</div>
+          </div>
+          <span class="step-badge badge-required" id="badge1">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+          <div class="field">
+            <label>Website-adres (URL)</label>
+            <input type="text" id="baseUrl" placeholder="https://impazz.nl/pagina" />
+            <div class="field-hint">Kopieer de URL uit je browser. Zorg dat het begint met https://</div>
+          </div>
+          <button class="next-btn" onclick="goToStep2()">
+            Volgende stap
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 2 -->
+  <div class="step" id="step2">
+    <div class="step-left"><div class="step-num">2</div></div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-counter">Stap 2 van 4</div>
+            <div class="step-card-title">Waar komt deze link vandaan?</div>
+            <div class="step-card-sub">Kies een preset of stel zelf samen</div>
+          </div>
+          <span class="step-badge badge-required" id="badge2">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+          <div class="section-label">Kies een kanaal</div>
+          <div class="preset-grid" id="presetGrid"></div>
+
+          <hr class="section-sep" />
+
+          <div class="field">
+            <label>Bron <code>utm_source</code></label>
+            <div class="cd-wrap" id="cdSourceWrap">
+              <button type="button" class="cd-trigger placeholder" id="cdSourceTrigger" onclick="toggleDropdown('cdSourceWrap')">
+                <span id="cdSourceLabel">Kies een bron…</span>
+                <svg class="cd-chevron" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cd-menu" id="cdSourceMenu"></div>
+            </div>
+            <div class="filter-hint" id="sourceFilterHint"></div>
+            <div class="custom-wrap" id="utmSourceCustomWrap">
+              <input type="text" id="utmSourceCustom" placeholder="bijv. ultimo of reddit" autocapitalize="none" autocorrect="off" spellcheck="false" />
+              <div class="custom-warn">⚠ Voor partners en nieuwe platformen. Gebruik de naam van het platform, dus <strong>reddit</strong>, niet <strong>reddit.com</strong>. Nooit <strong>fb</strong>, <strong>ig</strong> of een platform-ID. Meld nieuwe bronnen zodat ze aan de vaste lijst kunnen worden toegevoegd.</div>
+            </div>
+            <div class="field-hint">Het platform waar de klik vandaan komt.</div>
+          </div>
+
+          <div class="field">
+            <label>Kanaaltype <code>utm_medium</code></label>
+            <div class="cd-wrap" id="cdMediumWrap">
+              <button type="button" class="cd-trigger placeholder" id="cdMediumTrigger" onclick="toggleDropdown('cdMediumWrap')">
+                <span id="cdMediumLabel">Kies een kanaaltype…</span>
+                <svg class="cd-chevron" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cd-menu" id="cdMediumMenu"></div>
+            </div>
+            <div class="filter-hint" id="mediumFilterHint"></div>
+            <div class="field-hint">Vaste lijst van acht. Deze waardes vallen correct in de GA4-kanaalgroepering.</div>
+          </div>
+
+          <button class="next-btn" onclick="goToStep3()">
+            Volgende stap
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 3 -->
+  <div class="step" id="step3">
+    <div class="step-left"><div class="step-num">3</div></div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-counter">Stap 3 van 4</div>
+            <div class="step-card-title">Hoe heet je campagne?</div>
+            <div class="step-card-sub">Gebruik dezelfde naam als in ActiveCampaign, Lemlist of het advertentieplatform</div>
+          </div>
+          <span class="step-badge badge-required" id="badge3">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+
+          <div class="field">
+            <label>Campagnenaam <code>utm_campaign</code></label>
+            <input type="text" id="utmCampaign" placeholder="impazz-traffic-nieuwsbrief-202610" oninput="updateCampaignPreview()" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <div class="field-hint">Patroon: <code>merk-doel-onderwerp-periode</code>. Kleine letters en koppeltekens, geen spaties.</div>
+            <div class="cn-examples">
+              <span class="cn-examples-label">Voorbeelden:</span>
+              <button type="button" class="cn-chip" onclick="fillCampaign(this)">impazz-traffic-nieuwsbrief-202610</button>
+              <button type="button" class="cn-chip" onclick="fillCampaign(this)">impazz-leads-ultimo-trainingen-202610</button>
+              <button type="button" class="cn-chip" onclick="fillCampaign(this)">impazz-leads-outbound-personeel-202610</button>
+            </div>
+            <div class="cn-normalized" id="cnNormalized"></div>
+          </div>
+
+          <hr class="section-sep" />
+          <div class="section-label">Optioneel</div>
+
+          <div class="field">
+            <label>Advertentie of variant <code>utm_content</code></label>
+            <input type="text" id="utmContent" placeholder="cta-boven, variant-a, banner-onderaan" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <div class="field-hint">Gebruik dit voor A/B-varianten in plaats van ze in de campagnenaam te verwerken.</div>
+          </div>
+
+          <div class="field">
+            <label>Zoekwoord of doelgroep <code>utm_term</code></label>
+            <input type="text" id="utmTerm" placeholder="{keyword}, hoofd-td" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <div class="field-hint">Bij Google Ads <code>{keyword}</code>, bij Lemlist of LinkedIn bijvoorbeeld de doelgroep.</div>
+          </div>
+
+          <button class="next-btn" onclick="goToStep4()">
+            Genereer mijn URL
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 4 -->
+  <div class="step" id="step4">
+    <div class="step-left"><div class="step-num">4</div></div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-counter">Stap 4 van 4</div>
+            <div class="step-card-title">Jouw campagne-URL is klaar</div>
+            <div class="step-card-sub">Kopieer de link en gebruik hem in je campagne</div>
+          </div>
+          <span class="step-badge badge-done" id="badge4" style="display:none;">✓ Klaar</span>
+        </div>
+        <div class="step-card-body">
+          <div style="position:relative;">
+            <div class="output-block" id="outputUrl"><span class="o-empty">Vul de stappen hierboven in…</span></div>
+            <button class="copy-btn" id="copyBtn" onclick="copyUrl()">Kopiëren</button>
+          </div>
+          <div class="output-meta">
+            <span id="urlStatus">–</span>
+            <span id="urlLen"></span>
+          </div>
+          <table><tbody id="paramsBody"></tbody></table>
+          <div class="save-row">
+            <button class="btn btn-primary" onclick="addToHistory()">Opslaan in lijst</button>
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="exportCSV()">↓ CSV exporteren</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" style="margin-top:16px;">
+        <div class="step-card-header">
+          <div class="step-card-title">Opgeslagen URLs</div>
+          <span id="historyCount" style="font-size:11px;color:var(--muted2);"></span>
+        </div>
+        <div class="step-card-body">
+          <div class="history-list" id="historyList">
+            <div class="no-history">Nog geen URLs opgeslagen.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="restart-row">
+        <button class="restart-link" onclick="restartFlow()">+ Nieuwe URL aanmaken</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ---------- Vaste lijsten uit de naamgevingsconventie ---------- */
+
+  const SOURCES = [
+    { v:'google',         d:'Google Ads' },
+    { v:'meta',           d:'Facebook, Instagram' },
+    { v:'linkedin',       d:'LinkedIn' },
+    { v:'bing',           d:'Microsoft Ads' },
+    { v:'activecampaign', d:'Eigen e-mail (ActiveCampaign)' },
+    { v:'emailhandtekening', d:'Link in e-mailhandtekening' },
+    { v:'lemlist',        d:'Outbound e-mail (Lemlist)' },
+  ];
+
+  const MEDIUMS = [
+    { v:'cpc',            d:'Betaald zoekverkeer' },
+    { v:'paid-social',    d:'Betaalde social' },
+    { v:'display',        d:'Display en banners' },
+    { v:'email',          d:'Alle e-mail' },
+    { v:'organic-social', d:'Organische posts' },
+    { v:'referral',       d:'Partnersites' },
+    { v:'affiliate',      d:'Affiliatepartners' },
+    { v:'partner',        d:'Klantcampagnes' },
+  ];
+
+  const PRESETS = [
+    { name:'Nieuwsbrief of mailing', vals:{ source:'activecampaign', medium:'email' } },
+    { name:'Lemlist e-mail',         vals:{ source:'lemlist',  medium:'email' } },
+    { name:'LinkedIn (Lemlist of organisch)', vals:{ source:'linkedin', medium:'organic-social' } },
+    { name:'LinkedIn Ads',           vals:{ source:'linkedin', medium:'paid-social' } },
+    { name:'Google Ads',             vals:{ source:'google',   medium:'cpc' } },
+    { name:'Partnerplaatsing',       vals:{ source:'__custom__', medium:'partner' } },
+  ];
+
+  /* ---------- Welke bron hoort bij welk kanaaltype ---------- */
+  /* Per bron de kanaaltypes die logisch mogelijk zijn. De omgekeerde
+     richting (medium -> bronnen) wordt hieruit automatisch afgeleid. */
+
+  const COMPAT = {
+    'google':         ['cpc', 'display'],
+    'meta':           ['paid-social', 'organic-social'],
+    'linkedin':       ['paid-social', 'organic-social'],
+    'bing':           ['cpc'],
+    'activecampaign': ['email'],
+    'emailhandtekening': ['email'],
+    'lemlist':        ['email'],
+    // Eigen invoer: partners, maar ook nieuwe platformen die nog niet in de
+    // lijst staan. Bewuste uitzondering, dus alle kanaaltypes toegestaan.
+    '__custom__':     ['cpc', 'paid-social', 'display', 'email', 'organic-social', 'referral', 'affiliate', 'partner'],
+  };
+
+  function mediumsForSource(src) {
+    return COMPAT[src] || null;   // null = geen beperking
+  }
+
+  function sourcesForMedium(med) {
+    if (!med) return null;
+    return Object.keys(COMPAT).filter(s => COMPAT[s].includes(med));
+  }
+
+  /* Bepaalt welke opties toegestaan zijn, gegeven de andere keuze */
+  function allowedValues(type) {
+    if (type === 'medium') return mediumsForSource(dropState.source);
+    if (type === 'source')  return sourcesForMedium(dropState.medium);
+    return null;
+  }
+
+  /* Grijst niet-passende opties uit in beide menu's */
+  function refreshCompatibility() {
+    ['source','medium'].forEach(type => {
+      const cfg = DROPS[type];
+      const allowed = allowedValues(type);
+      document.querySelectorAll(`#${cfg.menu} .cd-option`).forEach(opt => {
+        const v = opt.dataset.value;
+        const ok = !allowed || allowed.includes(v);
+        opt.classList.toggle('disabled', !ok);
+      });
+      // Toon een hint als er gefilterd wordt
+      const hint = document.getElementById(type === 'source' ? 'sourceFilterHint' : 'mediumFilterHint');
+      if (hint) {
+        const other = type === 'source' ? dropState.medium : dropState.source;
+        const otherLabel = other === '__custom__' ? 'een eigen bron' : other;
+        if (allowed && other) {
+          hint.textContent = `Alleen opties die passen bij ${otherLabel} zijn beschikbaar.`;
+          hint.classList.add('show');
+        } else {
+          hint.classList.remove('show');
+        }
+      }
+    });
+  }
+
+  /* ---------- Dropdown engine ---------- */
+
+  const DROPS = {
+    source:  { list: SOURCES,  menu:'cdSourceMenu',  trigger:'cdSourceTrigger',  label:'cdSourceLabel',  wrap:'cdSourceWrap',  customWrap:'utmSourceCustomWrap', customInput:'utmSourceCustom', placeholder:'Kies een bron…',        allowCustom:true,  customLabel:'Andere bron, namelijk…' },
+    medium:  { list: MEDIUMS,  menu:'cdMediumMenu',  trigger:'cdMediumTrigger',  label:'cdMediumLabel',  wrap:'cdMediumWrap',  customWrap:null,                  customInput:null,              placeholder:'Kies een kanaaltype…',  allowCustom:false },
+  };
+
+  const dropState = { source:'', medium:'' };
+
+  const checkSvg = '<svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function buildMenus() {
+    Object.entries(DROPS).forEach(([type, cfg]) => {
+      const menu = document.getElementById(cfg.menu);
+      menu.innerHTML = '';
+      cfg.list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cd-option';
+        div.dataset.value = item.v;
+        div.innerHTML = `${checkSvg}<span>${item.v}</span><span class="cd-opt-desc">${item.d}</span>`;
+        div.onclick = () => selectOption(type, item.v);
+        menu.appendChild(div);
+      });
+      if (cfg.allowCustom) {
+        const div = document.createElement('div');
+        div.className = 'cd-option custom-opt';
+        div.dataset.value = '__custom__';
+        div.innerHTML = `${checkSvg}<span>${cfg.customLabel}</span>`;
+        div.onclick = () => selectOption(type, '__custom__');
+        menu.appendChild(div);
+      }
+    });
+  }
+
+  function toggleDropdown(wrapId) {
+    const wrap = document.getElementById(wrapId);
+    const isOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.cd-wrap.open').forEach(w => w.classList.remove('open'));
+    if (!isOpen) wrap.classList.add('open');
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.cd-wrap')) {
+      document.querySelectorAll('.cd-wrap.open').forEach(w => w.classList.remove('open'));
+    }
+  });
+
+  function selectOption(type, value, opts = {}) {
+    const cfg = DROPS[type];
+
+    // Blokkeer keuzes die niet passen bij de andere dropdown
+    if (!opts.force && value) {
+      const allowed = allowedValues(type);
+      if (allowed && !allowed.includes(value)) {
+        const other = type === 'source' ? dropState.medium : dropState.source;
+        showToast(`Dat past niet bij ${other === '__custom__' ? 'een eigen bron' : other}`);
+        return;
+      }
+    }
+
+    dropState[type] = value;
+
+    const trigger = document.getElementById(cfg.trigger);
+    const label = document.getElementById(cfg.label);
+    if (value === '__custom__') {
+      label.textContent = cfg.customLabel;
+      trigger.classList.add('placeholder');
+    } else if (value) {
+      label.textContent = value;
+      trigger.classList.remove('placeholder');
+    } else {
+      label.textContent = cfg.placeholder;
+      trigger.classList.add('placeholder');
+    }
+
+    document.querySelectorAll(`#${cfg.menu} .cd-option`).forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.value === value);
+    });
+
+    if (cfg.customWrap) {
+      const cw = document.getElementById(cfg.customWrap);
+      if (value === '__custom__') {
+        cw.classList.add('show');
+        setTimeout(() => document.getElementById(cfg.customInput).focus(), 50);
+      } else {
+        cw.classList.remove('show');
+      }
+    }
+
+    // Als de andere keuze hierdoor ongeldig wordt, die leegmaken
+    const otherType = type === 'source' ? 'medium' : 'source';
+    const otherVal = dropState[otherType];
+    if (otherVal && !opts.skipCascade) {
+      const stillOk = (allowedValues(otherType) || []).includes(otherVal);
+      if (!stillOk) {
+        clearDrop(otherType);
+        showToast(`Kanaaltype opnieuw kiezen bij ${value === '__custom__' ? 'een eigen bron' : value}`);
+      }
+    }
+
+    refreshCompatibility();
+    document.getElementById(cfg.wrap).classList.remove('open');
+    updateCampaignPreview();
+  }
+
+  function clearDrop(type) {
+    const cfg = DROPS[type];
+    dropState[type] = '';
+    document.getElementById(cfg.label).textContent = cfg.placeholder;
+    document.getElementById(cfg.trigger).classList.add('placeholder');
+    document.querySelectorAll(`#${cfg.menu} .cd-option`).forEach(o => o.classList.remove('selected'));
+    if (cfg.customWrap) document.getElementById(cfg.customWrap).classList.remove('show');
+  }
+
+  function setDrop(type, value, opts = {}) {
+    const cfg = DROPS[type];
+    if (!value) {
+      clearDrop(type);
+      refreshCompatibility();
+      return;
+    }
+    const known = cfg.list.some(i => i.v === value);
+    if (known || value === '__custom__') {
+      selectOption(type, value, opts);
+    } else if (cfg.allowCustom) {
+      selectOption(type, '__custom__', opts);
+      document.getElementById(cfg.customInput).value = value;
+      updateCampaignPreview();
+    }
+  }
+
+  function dropValue(type) {
+    const cfg = DROPS[type];
+    const v = dropState[type];
+    if (v === '__custom__' && cfg.customInput) {
+      return normalize(document.getElementById(cfg.customInput).value);
+    }
+    return v || '';
+  }
+
+  function normalize(s) {
+    return (s || '').trim().toLowerCase().replace(/\s+/g, '-');
+  }
+
+  /* ---------- Presets ---------- */
+
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    const srcLabel = p.vals.source === '__custom__' ? 'partner' : p.vals.source;
+    btn.innerHTML = `<div class="preset-dot"></div><div><span class="preset-name">${p.name}</span><span class="preset-vals">${srcLabel} · ${p.vals.medium}</span></div>`;
+    btn.onclick = () => {
+      clearDrop('source'); clearDrop('medium');
+      setDrop('source', p.vals.source, { force:true, skipCascade:true });
+      setDrop('medium', p.vals.medium, { force:true, skipCascade:true });
+      showToast(`"${p.name}" ingevuld`);
+    };
+    document.getElementById('presetGrid').appendChild(btn);
+  });
+
+  /* ---------- Campagnenaam ---------- */
+
+  function buildCampaign() {
+    return normalize(document.getElementById('utmCampaign').value);
+  }
+
+  function fillCampaign(btn) {
+    document.getElementById('utmCampaign').value = btn.textContent.trim();
+    updateCampaignPreview();
+  }
+
+  function updateCampaignPreview() {
+    const raw = document.getElementById('utmCampaign').value.trim();
+    const clean = normalize(raw);
+    const el = document.getElementById('cnNormalized');
+    if (raw && raw !== clean) {
+      el.innerHTML = `Spaties worden koppeltekens: <code>${esc(clean)}</code>`;
+      el.classList.add('show');
+    } else {
+      el.classList.remove('show');
+    }
+  }
+
+  /* ---------- URL opbouw ---------- */
+
+  const PARAM_KEYS = { utmSource:'utm_source', utmMedium:'utm_medium', utmCampaign:'utm_campaign', utmTerm:'utm_term', utmContent:'utm_content' };
+  const PARAMS = ['utmSource','utmMedium','utmCampaign','utmTerm','utmContent'];
+
+  function getValues() {
+    return {
+      baseUrl: document.getElementById('baseUrl').value.trim(),
+      utmSource: dropValue('source'),
+      utmMedium: dropValue('medium'),
+      utmCampaign: buildCampaign(),
+      utmTerm: document.getElementById('utmTerm').value.trim(),
+      utmContent: normalize(document.getElementById('utmContent').value),
+    };
+  }
+
+  function buildUrl(vals) {
+    if (!vals.baseUrl) return '';
+    const params = PARAMS.filter(k => vals[k]).map(k => `${PARAM_KEYS[k]}=${encodeURIComponent(vals[k])}`);
+    if (!params.length) return vals.baseUrl;
+    return vals.baseUrl + (vals.baseUrl.includes('?') ? '&' : '?') + params.join('&');
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------- Stappen ---------- */
+
+  let currentStep = 1;
+  let maxStepReached = 1;
+
+  function setStep(n) {
+    maxStepReached = Math.max(maxStepReached, n);
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('step' + i);
+      el.classList.remove('active','done','locked');
+      if (i > maxStepReached) el.classList.add('locked');
+      else if (i < n) el.classList.add('done');
+      else if (i === n) el.classList.add('active');
+      else el.classList.add('done');
+    }
+    currentStep = n;
+    updateProgress(n);
+  }
+
+  function updateProgress(n) {
+    document.getElementById('progressLabel').textContent = `Stap ${n} van 4`;
+    document.getElementById('progressFill').style.width = (n / 4 * 100) + '%';
+  }
+
+  function goToStep2() {
+    const url = document.getElementById('baseUrl').value.trim();
+    if (!url) { showToast('Vul eerst een URL in'); document.getElementById('baseUrl').focus(); return; }
+    if (!url.startsWith('http')) { showToast('De URL moet beginnen met https://'); document.getElementById('baseUrl').focus(); return; }
+    document.getElementById('done1').innerHTML = `<strong>Pagina:</strong> ${esc(url)}`;
+    setBadge('badge1');
+    setStep(2);
+    scrollToStep('step2');
+  }
+
+  function goToStep3() {
+    const src = dropValue('source'), med = dropValue('medium');
+    if (!src) { showToast('Kies een bron'); return; }
+    if (!med) { showToast('Kies een kanaaltype'); return; }
+    document.getElementById('done2').innerHTML = `<strong>Bron:</strong> ${esc(src)} &nbsp;·&nbsp; <strong>Kanaal:</strong> ${esc(med)}`;
+    setBadge('badge2');
+    setStep(3);
+    scrollToStep('step3');
+  }
+
+  /* ---------- Confetti ---------- */
+
+  const CONFETTI_PALETTE = [
+    '#d2232b', // Impazz-rood
+    '#e8676c', // lichter rood
+    '#00325b', // Impazz-blauw
+    '#3a6a94', // lichter blauw
+    '#ffffff', // wit voor contrast
+    '#ffd166', // warme spot
+  ];
+
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const cctx = confettiCanvas.getContext('2d');
+  let confettiPieces = [];
+  let confettiRAF = null;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    confettiCanvas.width = window.innerWidth * dpr;
+    confettiCanvas.height = window.innerHeight * dpr;
+    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', sizeCanvas);
+
+  function makePiece(originX, originY) {
+    const angle = (-90 + (Math.random() * 110 - 55)) * Math.PI / 180;
+    const speed = 9 + Math.random() * 11;
+    const isRibbon = Math.random() > 0.35;
+    return {
+      x: originX,
+      y: originY,
+      vx: Math.cos(angle) * speed * (0.7 + Math.random() * 0.6),
+      vy: Math.sin(angle) * speed,
+      // ribbons zijn lang en dun, de rest kleine ronde snippers
+      w: isRibbon ? 3 + Math.random() * 3 : 5 + Math.random() * 4,
+      h: isRibbon ? 11 + Math.random() * 9 : 5 + Math.random() * 4,
+      round: !isRibbon,
+      color: CONFETTI_PALETTE[Math.floor(Math.random() * CONFETTI_PALETTE.length)],
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.22,
+      // flip simuleert het draaien om de eigen as, geeft de fladder
+      flip: Math.random() * Math.PI * 2,
+      flipSpeed: 0.08 + Math.random() * 0.14,
+      drift: (Math.random() - 0.5) * 0.45,
+      life: 0,
+      maxLife: 110 + Math.random() * 70,
+    };
+  }
+
+  function fireConfetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    sizeCanvas();
+    confettiCanvas.classList.add('active');
+
+    const w = window.innerWidth, h = window.innerHeight;
+    // twee bronnen links en rechts, schuin naar binnen: rustiger dan één bak vanuit het midden
+    const bursts = [
+      { x: w * 0.2, y: h * 0.72, n: 45 },
+      { x: w * 0.8, y: h * 0.72, n: 45 },
+    ];
+    bursts.forEach(b => {
+      for (let i = 0; i < b.n; i++) {
+        const p = makePiece(b.x, b.y);
+        // duw de zijkanten naar het midden toe
+        p.vx += (w / 2 - b.x) * 0.006;
+        confettiPieces.push(p);
+      }
+    });
+
+    if (!confettiRAF) confettiRAF = requestAnimationFrame(stepConfetti);
+  }
+
+  function stepConfetti() {
+    cctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    confettiPieces = confettiPieces.filter(p => {
+      p.life++;
+      p.vy += 0.28;              // zwaartekracht
+      p.vx *= 0.985;             // luchtweerstand
+      p.vy *= 0.992;
+      p.vx += Math.sin(p.life * 0.05) * p.drift * 0.35; // zijwaartse zweving
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotSpeed;
+      p.flip += p.flipSpeed;
+
+      const fade = p.life > p.maxLife * 0.65
+        ? 1 - (p.life - p.maxLife * 0.65) / (p.maxLife * 0.35)
+        : 1;
+      if (fade <= 0 || p.y > window.innerHeight + 60) return false;
+
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rot);
+      // squash op de y-as maakt het 3D-draaien zichtbaar
+      cctx.scale(1, Math.abs(Math.cos(p.flip)) * 0.85 + 0.15);
+      cctx.globalAlpha = Math.max(0, fade);
+      cctx.fillStyle = p.color;
+
+      if (p.round) {
+        cctx.beginPath();
+        cctx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+        cctx.fill();
+      } else if (cctx.roundRect) {
+        cctx.beginPath();
+        cctx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, 1.5);
+        cctx.fill();
+      } else {
+        cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      cctx.restore();
+      return true;
+    });
+
+    if (confettiPieces.length) {
+      confettiRAF = requestAnimationFrame(stepConfetti);
+    } else {
+      confettiRAF = null;
+      confettiCanvas.classList.remove('active');
+      cctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+  }
+
+  function goToStep4() {
+    const name = buildCampaign();
+    if (!name) { showToast('Vul een campagnenaam in'); document.getElementById('utmCampaign').focus(); return; }
+    document.getElementById('done3').innerHTML = `<strong>Campagne:</strong> ${esc(name)}`;
+    setBadge('badge3');
+    document.getElementById('badge4').style.display = '';
+    setStep(4);
+    updateOutput();
+    scrollToStep('step4');
+    setTimeout(fireConfetti, 380);
+  }
+
+  function setBadge(id) {
+    const el = document.getElementById(id);
+    el.className = 'step-badge badge-done';
+    el.textContent = '✓ Klaar';
+  }
+
+  function scrollToStep(id) {
+    setTimeout(() => document.getElementById(id).scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+  }
+
+  function updateOutput() {
+    const vals = getValues();
+    const url = buildUrl(vals);
+    const out = document.getElementById('outputUrl');
+
+    if (!url) {
+      out.innerHTML = '<span class="o-empty">Vul de stappen hierboven in…</span>';
+      document.getElementById('urlStatus').textContent = '–';
+      document.getElementById('urlStatus').className = '';
+      document.getElementById('urlLen').textContent = '';
+    } else {
+      const sep = vals.baseUrl.includes('?') ? '&' : '?';
+      const paramHtml = PARAMS.filter(k => vals[k])
+        .map(k => `<span class="o-key">${PARAM_KEYS[k]}</span><span class="o-sep">=</span><span class="o-val">${encodeURIComponent(vals[k])}</span>`)
+        .join('<span class="o-sep">&amp;</span>');
+      out.innerHTML = `<span class="o-base">${esc(vals.baseUrl)}</span>` + (paramHtml ? `<span class="o-sep">${sep}</span>${paramHtml}` : '');
+      document.getElementById('urlLen').textContent = url.length + ' tekens';
+      const missing = ['utmSource','utmMedium','utmCampaign'].filter(k => !vals[k]);
+      const st = document.getElementById('urlStatus');
+      st.textContent = missing.length ? `Ontbreekt: ${missing.map(k=>PARAM_KEYS[k]).join(', ')}` : '✓ Voldoet aan de conventie';
+      st.className = missing.length ? 'status-warn' : 'status-ok';
+    }
+
+    const tbody = document.getElementById('paramsBody');
+    tbody.innerHTML = '';
+    PARAMS.forEach(k => {
+      const val = vals[k];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${PARAM_KEYS[k]}</td><td class="${val?'':'empty'}">${val ? esc(val) : '–'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function copyUrl() {
+    const url = buildUrl(getValues());
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Gekopieerd';
+      btn.classList.add('copied');
+      showToast('URL gekopieerd naar klembord');
+      setTimeout(() => { btn.textContent = 'Kopiëren'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  /* ---------- History (lokaal in de browser) ---------- */
+
+  let history = JSON.parse(localStorage.getItem('utm_history_impazz') || '[]');
+
+  function addToHistory() {
+    const vals = getValues();
+    if (!vals.baseUrl) return;
+    history.unshift({ url: buildUrl(vals), vals, ts: Date.now() });
+    if (history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem('utm_history_impazz', JSON.stringify(history));
+    renderHistory();
+    showToast('Opgeslagen');
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('historyList');
+    const countEl = document.getElementById('historyCount');
+    countEl.textContent = history.length ? `${history.length} item${history.length !== 1 ? 's' : ''}` : '';
+    if (!history.length) { el.innerHTML = '<div class="no-history">Nog geen URLs opgeslagen.</div>'; return; }
+    el.innerHTML = '';
+    history.forEach((item, i) => {
+      const d = new Date(item.ts);
+      const date = d.toLocaleDateString('nl-NL',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = `
+        <div class="hi-dot"></div>
+        <div class="hi-info">
+          <div class="hi-campaign">${esc(item.vals.utmCampaign || '(geen campagne)')}</div>
+          <div class="hi-meta">${esc(item.vals.utmSource||'?')} · ${esc(item.vals.utmMedium||'?')} · ${date}</div>
+        </div>
+        <div class="hi-actions">
+          <button class="sm-btn" onclick="copyHistoryUrl(${i})">Kopiëren</button>
+          <button class="sm-btn" onclick="deleteHistory(${i})">✕</button>
+        </div>
+      `;
+      el.appendChild(div);
+    });
+  }
+
+  function copyHistoryUrl(i) {
+    navigator.clipboard.writeText(history[i].url).then(() => showToast('URL gekopieerd'));
+  }
+
+  function deleteHistory(i) {
+    history.splice(i, 1);
+    localStorage.setItem('utm_history_impazz', JSON.stringify(history));
+    renderHistory();
+  }
+
+  function exportCSV() {
+    if (!history.length) { showToast('Geen opgeslagen URLs'); return; }
+    const headers = ['Datum','URL','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+    const rows = history.map(item =>
+      [new Date(item.ts).toLocaleString('nl-NL'), item.url, item.vals.utmSource, item.vals.utmMedium, item.vals.utmCampaign, item.vals.utmTerm, item.vals.utmContent]
+        .map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',')
+    );
+    const blob = new Blob([[headers.join(','), ...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `utm-export-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    showToast('CSV geëxporteerd');
+  }
+
+  function restartFlow() {
+    ['baseUrl','utmCampaign','utmTerm','utmContent','utmSourceCustom'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    Object.keys(DROPS).forEach(type => clearDrop(type));
+    refreshCompatibility();
+    ['badge1','badge2','badge3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.className = 'step-badge badge-required';
+      el.textContent = 'Verplicht';
+    });
+    document.getElementById('badge4').style.display = 'none';
+    updateCampaignPreview();
+    maxStepReached = 1;
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleAccordion() {
+    document.getElementById('utmAccordion').classList.toggle('open');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ---------- Alleen kleine letters in vrije velden ---------- */
+
+  function forceLowercase(el) {
+    el.addEventListener('input', () => {
+      const lower = el.value.toLowerCase();
+      if (el.value !== lower) {
+        const pos = el.selectionStart;
+        el.value = lower;
+        el.setSelectionRange(pos, pos);   // cursor niet laten springen
+      }
+    });
+    // Plakken uit Word of een mail levert vaak hoofdletters op
+    el.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').toLowerCase();
+      const start = el.selectionStart, end = el.selectionEnd;
+      el.value = el.value.slice(0, start) + text + el.value.slice(end);
+      el.setSelectionRange(start + text.length, start + text.length);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  ['utmSourceCustom','utmCampaign','utmContent','utmTerm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) forceLowercase(el);
+  });
+
+  /* ---------- Init ---------- */
+
+  buildMenus();
+  refreshCompatibility();
+  document.getElementById('utmSourceCustom').addEventListener('input', updateCampaignPreview);
+  setStep(1);
+  updateCampaignPreview();
+  renderHistory();
+</script>
+</body>
+</html>
